@@ -152,58 +152,42 @@
   .spinner{width:30px;height:30px;border:3px solid #eee;border-top-color:#1a1a1a;border-radius:50%;animation:spin 1s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
 </style>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
 </head>
 <body>
 
 <div id="app"><div class="loading"><div class="spinner"></div><div>Connecting to room…</div></div></div>
 
 <script>
-// ─── JSONBlob API (free, no signup, anonymous) ───
-const API="/api/jsonblob";
-let blobId=location.hash.replace("#","")||null;
-let pollInterval=null;
-let lastSync=0;
+// ─── FIREBASE CONFIGURATION ───
+const firebaseConfig = {
+  apiKey: "AIzaSyA0bgfK4xA-SF9fxkqgopukZD_TOPEmSVw",
+  authDomain: "fall-2026-schedule.firebaseapp.com",
+  databaseURL: "https://fall-2026-schedule-default-rtdb.firebaseio.com",
+  projectId: "fall-2026-schedule",
+  storageBucket: "fall-2026-schedule.firebasestorage.app",
+  messagingSenderId: "184833453376",
+  appId: "1:184833453376:web:432bfeaca1b7fbff545ea5",
+  measurementId: "G-YCM34K89ZF"
+};
 
-async function createRoom(){
-  const r=await fetch(API,{
-    method:"POST",
-    headers:{
-      "Content-Type":"application/json",
-      "Accept":"application/json"
-    },
-    body:JSON.stringify({users:{},created:Date.now()})
-  });
-  
-  if(!r.ok) throw new Error("Failed to create room");
-  
-  // Browsers often hide the "Location" header due to CORS, so we check "x-jsonblob" first
-  const loc = r.headers.get("Location") || r.headers.get("location");
-  const xBlob = r.headers.get("x-jsonblob") || r.headers.get("x-jsonblob-id") || r.headers.get("X-Jsonblob");
-  
-  let id = xBlob;
-  if (!id && loc) {
-    id = loc.split("/").pop();
-  }
-  
-  if (!id) throw new Error("Could not extract Room ID from headers.");
-  
-  return id;
+// Initialize Firebase
+if (!firebase.apps.length) {
+  firebase.initializeApp(firebaseConfig);
 }
+const db = firebase.database();
 
-async function fetchRoom(){
-  if(!blobId)return null;
-  try{
-    const r=await fetch(API+"/"+blobId,{headers:{"Accept":"application/json"}});
-    if(!r.ok)return null;
-    return await r.json();
-  }catch(e){return null}
-}
+let roomId = location.hash.replace("#", "") || null;
+let saveTimer = null;
+let pendingSave = false;
 
-async function saveRoom(data){
-  if(!blobId)return;
-  try{
-    await fetch(API+"/"+blobId,{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
-  }catch(e){console.error("Save failed",e)}
+async function createRoom() {
+  const roomRef = db.ref('rooms').push();
+  await roomRef.set({ created: Date.now(), users: {} });
+  return roomRef.key;
 }
 
 // ─── Course Data ───
@@ -267,33 +251,32 @@ const DAYS=["Mon","Tue","Wed","Thu"],SH=8,EH=22;
 
 // ─── State ───
 let userName="",userId="",selected=new Set(),room={users:{}},view="list",search="",filterSubj="ALL",filterTime="ALL",sortBy="subj",expandedCourse=null;
-let saveTimer=null,pendingSave=false;
 
 function getConflicts(){const sel=COURSES.filter(c=>selected.has(c.id)),pairs=[];for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++){for(const a of sel[i].slots)for(const b of sel[j].slots)if(a.day===b.day&&a.start<b.end&&b.start<a.end){pairs.push([sel[i],sel[j]]);break}}return pairs}
 function getConfIds(){const s=new Set();getConflicts().forEach(([a,b])=>{s.add(a.id);s.add(b.id)});return s}
 function sanitizeKey(name){return name.toLowerCase().replace(/[^a-z0-9]/g,"_")+"_"+Math.random().toString(36).slice(2,6)}
 
 async function pushUpdate(){
-  if(!userName||!blobId)return;
-  if(!room.users)room.users={};
-  room.users[userId]={name:userName,courses:[...selected],updated:Date.now()};
-  await saveRoom(room);
+  if(!userName||!roomId)return;
+  const userRef = db.ref('rooms/' + roomId + '/users/' + userId);
+  await userRef.set({ name: userName, courses: [...selected], updated: Date.now() });
 }
 
 function debouncedPush(){
   if(saveTimer)clearTimeout(saveTimer);
-  pendingSave=true;
-  saveTimer=setTimeout(async()=>{await pushUpdate();pendingSave=false},500);
+  saveTimer=setTimeout(async()=>{await pushUpdate();},500);
 }
 
-async function pollRoom(){
-  if(pendingSave)return;
-  const data=await fetchRoom();
-  if(data){
-    room=data;
-    if(!room.users)room.users={};
-    render();
-  }
+function listenToRoom() {
+  if (!roomId) return;
+  db.ref('rooms/' + roomId).on('value', (snapshot) => {
+    const data = snapshot.val();
+    if (data) {
+      room = data;
+      if (!room.users) room.users = {};
+      render();
+    }
+  });
 }
 
 function startApp(){
@@ -301,19 +284,19 @@ function startApp(){
   if(!v)return;
   userName=v;
   userId=sanitizeKey(v);
-  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
+  saveLocal();
   pushUpdate();
   render();
 }
 
 function loadLocal(){
-  if(!blobId)return;
-  try{const d=JSON.parse(localStorage.getItem("gbs_user_"+blobId));if(d){userName=d.name;userId=d.id;selected=new Set(d.selected||[])}}catch(e){}
+  if(!roomId)return;
+  try{const d=JSON.parse(localStorage.getItem("gbs_user_"+roomId));if(d){userName=d.name;userId=d.id;selected=new Set(d.selected||[])}}catch(e){}
 }
 
 function saveLocal(){
-  if(!blobId||!userName)return;
-  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
+  if(!roomId||!userName)return;
+  try{localStorage.setItem("gbs_user_"+roomId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
 }
 
 function switchView(v){view=v;render()}
@@ -570,27 +553,25 @@ function renderSocial(matesByCourse){
 
 // ─── Init ───
 async function init(){
-  if(!blobId){
+  if(!roomId){
     try{
-      blobId=await createRoom();
-      location.hash=blobId;
+      roomId = await createRoom();
+      location.hash = roomId;
       toast("Room created! Share the link 🎉");
     }catch(e){
-      console.error("Room creation error:", e);
-      document.getElementById("app").innerHTML=`<div class="loading"><div>⚠️ Couldn't create room. Refresh to try again.</div></div>`;
+      console.error("Firebase Room creation error:", e);
+      document.getElementById("app").innerHTML=`<div class="loading"><div>⚠️ Couldn't connect to database. Check console.</div></div>`;
       return;
     }
   }
   loadLocal();
-  const data=await fetchRoom();
-  if(data){room=data;if(!room.users)room.users={}}
   render();
-  pollInterval=setInterval(pollRoom,3000);
+  listenToRoom(); // Firebase active listener instead of polling!
 }
 
 window.addEventListener("hashchange",()=>{
-  blobId=location.hash.replace("#","")||null;
-  if(blobId){location.reload()}
+  roomId = location.hash.replace("#","")||null;
+  if(roomId){location.reload()}
 });
 
 init();
