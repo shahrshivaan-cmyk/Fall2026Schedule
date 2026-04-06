@@ -165,10 +165,28 @@ let pollInterval=null;
 let lastSync=0;
 
 async function createRoom(){
-  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({users:{},created:Date.now()})});
-  if(!r.ok)throw new Error("Failed to create room");
-  const loc=r.headers.get("Location")||r.headers.get("location");
-  const id=loc.split("/").pop();
+  const r=await fetch(API,{
+    method:"POST",
+    headers:{
+      "Content-Type":"application/json",
+      "Accept":"application/json"
+    },
+    body:JSON.stringify({users:{},created:Date.now()})
+  });
+  
+  if(!r.ok) throw new Error("Failed to create room");
+  
+  // Browsers often hide the "Location" header due to CORS, so we check "x-jsonblob" first
+  const loc = r.headers.get("Location") || r.headers.get("location");
+  const xBlob = r.headers.get("x-jsonblob") || r.headers.get("x-jsonblob-id") || r.headers.get("X-Jsonblob");
+  
+  let id = xBlob;
+  if (!id && loc) {
+    id = loc.split("/").pop();
+  }
+  
+  if (!id) throw new Error("Could not extract Room ID from headers.");
+  
   return id;
 }
 
@@ -558,6 +576,7 @@ async function init(){
       location.hash=blobId;
       toast("Room created! Share the link 🎉");
     }catch(e){
+      console.error("Room creation error:", e);
       document.getElementById("app").innerHTML=`<div class="loading"><div>⚠️ Couldn't create room. Refresh to try again.</div></div>`;
       return;
     }
