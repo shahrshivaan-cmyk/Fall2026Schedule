@@ -16,6 +16,9 @@
   .badge{font-size:11px;background:#333;padding:2px 9px;border-radius:14px;color:#999;margin-left:8px}
   .user-area{display:flex;align-items:center;gap:8px}
   .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;border:2px solid rgba(255,255,255,0.2)}
+  .live-pill{display:flex;align-items:center;gap:5px;background:#292929;padding:4px 10px;border-radius:16px}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#34D399;animation:liveBlink 2s infinite}
+  @keyframes liveBlink{0%,100%{opacity:1}50%{opacity:.4}}
 
   .stats{background:#fff;border-bottom:1px solid #e5e5e0;padding:10px 24px}
   .stats-inner{max-width:1100px;margin:0 auto;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
@@ -61,15 +64,16 @@
   .c-meta .dot{color:#ddd;margin:0 3px}
   .conf-badge{font-size:9px;background:#FEE2E2;color:#DC2626;padding:1px 5px;border-radius:8px;font-weight:700}
   .mates-badge{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,.03);cursor:pointer;white-space:nowrap}
-  .mates-badge .mini-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;margin-left:-6px;border:2px solid #fff}
-  .mates-badge .mini-av:first-child{margin-left:0}
+  .mates-badge:hover{background:rgba(0,0,0,.06)}
+  .mini-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;margin-left:-6px;border:2px solid #fff}
+  .mini-av:first-child{margin-left:0}
   .mates-count{font-size:10px;color:#888;font-weight:600}
 
   .expanded{padding:6px 12px 10px 44px;border-bottom:1px solid #f0f0ec;background:#FAFAF8;animation:slideIn .15s ease}
   @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
   .exp-label{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
   .mate-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
-  .mate-row .av-sm{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700}
+  .av-sm{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700}
   .mate-row span{font-size:12px;font-weight:500}
 
   .sidebar{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:14px;position:sticky;top:14px}
@@ -102,41 +106,89 @@
   .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#888}
   .legend-dot{width:10px;height:10px;border-radius:3px}
 
-  .share-panel{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:20px}
-  .share-panel h3{font-size:15px;font-weight:700;margin-bottom:4px}
-  .share-panel p{font-size:12px;color:#888;margin-bottom:14px;line-height:1.5}
-  .share-box{background:#f8f8f5;border:1px solid #e5e5e0;border-radius:8px;padding:12px;font-family:'DM Mono',monospace;font-size:11px;word-break:break-all;margin-bottom:10px;max-height:80px;overflow:auto;color:#555;user-select:all}
-  .share-btn{padding:8px 20px;border-radius:7px;border:none;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
-  .share-btn.primary{background:#1a1a1a;color:#fff}.share-btn.primary:hover{background:#333}
-  .share-btn.secondary{background:#f3f3ef;color:#555;margin-left:6px}.share-btn.secondary:hover{background:#e8e8e4}
-  .import-area{width:100%;min-height:60px;padding:10px;border-radius:8px;border:1px dashed #ccc;font-family:'DM Mono',monospace;font-size:11px;resize:vertical;outline:none;margin-bottom:10px;background:#FAFAF8}
-  .friend-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;background:#f8f8f5;margin-bottom:6px}
-  .friend-card .av{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700;flex-shrink:0}
-  .friend-card .info{flex:1}
-  .friend-card .name{font-size:13px;font-weight:600}
-  .friend-card .detail{font-size:11px;color:#888;margin-top:2px}
-  .shared-course{display:flex;align-items:center;gap:6px;padding:4px 0}
-  .shared-course .chip{font-size:9px}
-  .shared-course .sc-title{font-size:11px;color:#666}
+  .panel{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:16px}
+  .panel h3{font-size:14px;font-weight:700;margin-bottom:3px}
+  .panel .sub{font-size:11px;color:#999;margin-bottom:14px}
 
-  .onboard{display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center}
-  .onboard-box{max-width:380px;padding:40px;animation:fadeUp .5s ease}
+  .pop-row{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .pop-row:not(:last-child){border-bottom:1px solid #f5f5f2}
+  .rank{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+  .add-btn{padding:4px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#666;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .add-btn.added{border:none;color:#fff}
+
+  .friend-row{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .friend-row:not(:last-child){border-bottom:1px solid #f5f5f2}
+  .av-md{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+  .friend-row .info{flex:1}
+  .friend-row .name{font-size:13px;font-weight:600}
+  .friend-row .meta{font-size:11px;color:#888;margin-top:1px}
+  .shared-num{font-size:18px;font-weight:700;color:#10B981}
+  .shared-lbl{font-size:9px;color:#888}
+
+  .share-card{background:linear-gradient(135deg,#1a1a1a,#2a2a2a);color:#fff;border-radius:10px;padding:20px;margin-bottom:14px}
+  .share-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+  .share-card p{font-size:11px;color:#aaa;margin-bottom:12px}
+  .share-url{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;word-break:break-all;margin-bottom:10px;color:#ddd;user-select:all}
+  .share-row{display:flex;gap:8px;flex-wrap:wrap}
+  .sb-primary{background:#fff;color:#1a1a1a;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .sb-primary:hover{background:#f0f0f0}
+  .sb-wa{background:#25D366;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+  .sb-wa:hover{background:#1ea952}
+
+  .onboard{display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}
+  .onboard-box{max-width:380px;animation:fadeUp .5s ease}
   @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
   .onboard h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
   .onboard p{font-size:13px;color:#888;margin-bottom:24px;line-height:1.5}
   .onboard .row{display:flex;gap:8px}
   .onboard input{flex:1;padding:12px 16px;border-radius:10px;border:1px solid #ddd;font-size:14px;font-family:inherit;outline:none}
   .onboard button{padding:12px 24px;border-radius:10px;border:none;background:#1a1a1a;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .onboard .room-info{margin-top:16px;font-size:11px;color:#aaa}
 
   .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;animation:toastIn .3s ease}
   @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-size:14px;color:#999;gap:14px}
+  .spinner{width:30px;height:30px;border:3px solid #eee;border-top-color:#1a1a1a;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 
-<div id="app"></div>
+<div id="app"><div class="loading"><div class="spinner"></div><div>Connecting to room…</div></div></div>
 
 <script>
+// ─── JSONBlob API (free, no signup, anonymous) ───
+const API="https://jsonblob.com/api/jsonBlob";
+let blobId=location.hash.replace("#","")||null;
+let pollInterval=null;
+let lastSync=0;
+
+async function createRoom(){
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({users:{},created:Date.now()})});
+  if(!r.ok)throw new Error("Failed to create room");
+  const loc=r.headers.get("Location")||r.headers.get("location");
+  const id=loc.split("/").pop();
+  return id;
+}
+
+async function fetchRoom(){
+  if(!blobId)return null;
+  try{
+    const r=await fetch(API+"/"+blobId,{headers:{"Accept":"application/json"}});
+    if(!r.ok)return null;
+    return await r.json();
+  }catch(e){return null}
+}
+
+async function saveRoom(data){
+  if(!blobId)return;
+  try{
+    await fetch(API+"/"+blobId,{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  }catch(e){console.error("Save failed",e)}
+}
+
+// ─── Course Data ───
 const COURSES=[
   {id:"3768",subj:"OAM",cat:"561",sect:"3201",title:"Principled Leadership (Core)",location:"GBS_204",pattern:"TTh 8:30am-9:45am",professor:"TBD"},
   {id:"3769",subj:"OAM",cat:"561",sect:"3202",title:"Principled Leadership (Core)",location:"GBS_204",pattern:"TTh 10am-11:15am",professor:"TBD"},
@@ -194,52 +246,99 @@ function fmtMin(m){const h=Math.floor(m/60),min=m%60,ap=h>=12?"pm":"am";return`$
 COURSES.forEach(c=>{c.slots=parsePattern(c.pattern)});
 
 const DAYS=["Mon","Tue","Wed","Thu"],SH=8,EH=22;
-let userName="",selected=new Set(),friends=[],view="list",search="",filterSubj="ALL",filterTime="ALL",sortBy="subj",expandedCourse=null;
 
-function getConflicts(){
-  const sel=COURSES.filter(c=>selected.has(c.id)),pairs=[];
-  for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++){
-    for(const a of sel[i].slots)for(const b of sel[j].slots)
-      if(a.day===b.day&&a.start<b.end&&b.start<a.end){pairs.push([sel[i],sel[j]]);break}
-  }return pairs;
-}
+// ─── State ───
+let userName="",userId="",selected=new Set(),room={users:{}},view="list",search="",filterSubj="ALL",filterTime="ALL",sortBy="subj",expandedCourse=null;
+let saveTimer=null,pendingSave=false;
+
+function getConflicts(){const sel=COURSES.filter(c=>selected.has(c.id)),pairs=[];for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++){for(const a of sel[i].slots)for(const b of sel[j].slots)if(a.day===b.day&&a.start<b.end&&b.start<a.end){pairs.push([sel[i],sel[j]]);break}}return pairs}
 function getConfIds(){const s=new Set();getConflicts().forEach(([a,b])=>{s.add(a.id);s.add(b.id)});return s}
+function sanitizeKey(name){return name.toLowerCase().replace(/[^a-z0-9]/g,"_")+"_"+Math.random().toString(36).slice(2,6)}
 
-function encodeSchedule(){return btoa(JSON.stringify({n:userName,c:[...selected]}))}
-function decodeSchedule(code){try{return JSON.parse(atob(code.trim()))}catch(e){return null}}
+async function pushUpdate(){
+  if(!userName||!blobId)return;
+  if(!room.users)room.users={};
+  room.users[userId]={name:userName,courses:[...selected],updated:Date.now()};
+  await saveRoom(room);
+}
 
-function toast(msg){
-  const el=document.createElement("div");el.className="toast";el.textContent=msg;document.body.appendChild(el);
-  setTimeout(()=>el.remove(),2500);
+function debouncedPush(){
+  if(saveTimer)clearTimeout(saveTimer);
+  pendingSave=true;
+  saveTimer=setTimeout(async()=>{await pushUpdate();pendingSave=false},500);
+}
+
+async function pollRoom(){
+  if(pendingSave)return;
+  const data=await fetchRoom();
+  if(data){
+    room=data;
+    if(!room.users)room.users={};
+    render();
+  }
+}
+
+function startApp(){
+  const v=document.getElementById("name-input").value.trim();
+  if(!v)return;
+  userName=v;
+  userId=sanitizeKey(v);
+  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
+  pushUpdate();
+  render();
+}
+
+function loadLocal(){
+  if(!blobId)return;
+  try{const d=JSON.parse(localStorage.getItem("gbs_user_"+blobId));if(d){userName=d.name;userId=d.id;selected=new Set(d.selected||[])}}catch(e){}
 }
 
 function saveLocal(){
-  try{localStorage.setItem("gbs_schedule",JSON.stringify({name:userName,selected:[...selected],friends}))}catch(e){}
-}
-function loadLocal(){
-  try{const d=JSON.parse(localStorage.getItem("gbs_schedule"));if(d){userName=d.name||"";selected=new Set(d.selected||[]);friends=d.friends||[]}}catch(e){}
+  if(!blobId||!userName)return;
+  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
 }
 
 function switchView(v){view=v;render()}
-function toggle(id){selected.has(id)?selected.delete(id):selected.add(id);saveLocal();render()}
+function toggle(id){selected.has(id)?selected.delete(id):selected.add(id);saveLocal();debouncedPush();render()}
 
+function toast(msg){const el=document.createElement("div");el.className="toast";el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2500)}
+
+function copyShareLink(){
+  const url=location.href;
+  navigator.clipboard.writeText(url).then(()=>toast("Link copied! 🎉")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("Link copied!");
+  });
+}
+
+function shareWA(){
+  const url=location.href;
+  const text=`Fall 2026 elective planning 📚 We're picking courses together — open this link, add your name, and we'll all see who's taking what:\n\n${url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+}
+
+// ─── Renderers ───
 function render(){
   const app=document.getElementById("app");
   if(!userName){app.innerHTML=renderOnboard();return}
+
   const conf=getConflicts(),confIds=getConfIds();
   const sel=COURSES.filter(c=>selected.has(c.id));
   let hrs=0;sel.forEach(c=>c.slots.forEach(s=>hrs+=s.end-s.start));hrs=(hrs/60).toFixed(1);
 
-  // Build friend lookup
   const matesByCourse={};
   COURSES.forEach(c=>{matesByCourse[c.id]=[]});
-  friends.forEach(f=>{(f.c||[]).forEach(cid=>{if(matesByCourse[cid])matesByCourse[cid].push(f.n)})});
+  Object.entries(room.users||{}).forEach(([uid,u])=>{
+    if(uid===userId||!u||!u.courses)return;
+    u.courses.forEach(cid=>{if(matesByCourse[cid])matesByCourse[cid].push(u.name)});
+  });
+
+  const totalUsers=Object.keys(room.users||{}).length;
 
   let html=`
   <div class="header"><div class="header-inner">
     <div><span class="logo">Fall 2026</span><span class="badge">Goizueta</span></div>
     <div class="user-area">
-      ${friends.length>0?`<div style="display:flex;align-items:center;gap:5px;background:#292929;padding:4px 10px;border-radius:16px"><div style="width:6px;height:6px;border-radius:50%;background:#34D399"></div><span style="font-size:10px;color:#aaa">${friends.length} friend${friends.length!==1?"s":""} added</span></div>`:""}
+      <div class="live-pill"><div class="live-dot"></div><span style="font-size:10px;color:#aaa">${totalUsers} live</span></div>
       <div class="avatar" style="background:${hc(userName)}">${ini(userName)}</div>
       <span style="font-size:12px;font-weight:600;color:#fff">${userName}</span>
     </div>
@@ -253,20 +352,19 @@ function render(){
     <div class="tabs">
       <button class="tab ${view==="list"?"on":""}" onclick="switchView('list')">Courses</button>
       <button class="tab ${view==="calendar"?"on":""}" onclick="switchView('calendar')">Week</button>
-      <button class="tab ${view==="social"?"on":""}" onclick="switchView('social')">Friends</button>
+      <button class="tab ${view==="social"?"on":""}" onclick="switchView('social')">Classmates</button>
     </div>
   </div></div>
   <div class="main">`;
 
-  // Conflicts
   conf.forEach(([a,b])=>{
     html+=`<div class="conflict-alert"><span>⚠️</span><span style="font-size:12px;color:#991B1B;flex:1"><strong>${a.subj} ${a.cat}</strong> overlaps <strong>${b.subj} ${b.cat}</strong></span>
     <button class="drop-btn" onclick="toggle('${b.id}')">Drop ${b.subj} ${b.cat}</button>
     <button class="drop-btn" onclick="toggle('${a.id}')">Drop ${a.subj} ${a.cat}</button></div>`;
   });
 
-  if(view==="list") html+=renderList(sel,confIds,matesByCourse);
-  else if(view==="calendar") html+=renderCalendar(sel,confIds,matesByCourse);
+  if(view==="list")html+=renderList(sel,confIds,matesByCourse);
+  else if(view==="calendar")html+=renderCalendar(sel,confIds,matesByCourse);
   else html+=renderSocial(matesByCourse);
 
   html+=`</div>`;
@@ -274,21 +372,18 @@ function render(){
 }
 
 function renderOnboard(){
+  const totalUsers=Object.keys(room.users||{}).length;
+  const userList=Object.values(room.users||{}).map(u=>u.name).slice(0,5).join(", ");
   return`<div class="onboard"><div class="onboard-box">
     <div style="font-size:48px;margin-bottom:16px">📚</div>
     <h1>Fall 2026 Schedule Solver</h1>
-    <p>Goizueta Business School<br>Pick your courses. Share with friends. See who's taking what.</p>
+    <p>Goizueta Business School<br>Pick your courses. See who's taking them in real-time.</p>
     <div class="row">
-      <input type="text" id="name-input" placeholder="Enter your name..." onkeydown="if(event.key==='Enter')startApp()">
+      <input type="text" id="name-input" placeholder="Enter your name..." onkeydown="if(event.key==='Enter')startApp()" autofocus>
       <button onclick="startApp()">Go</button>
     </div>
+    ${totalUsers>0?`<div class="room-info">🟢 ${totalUsers} ${totalUsers===1?"person is":"people are"} already in this room${userList?": "+userList:""}${totalUsers>5?" + others":""}</div>`:'<div class="room-info">You\'re the first one here — share the link to invite friends!</div>'}
   </div></div>`;
-}
-
-function startApp(){
-  const v=document.getElementById("name-input").value.trim();
-  if(!v)return;
-  userName=v;saveLocal();render();
 }
 
 function renderList(sel,confIds,matesByCourse){
@@ -325,7 +420,7 @@ function renderList(sel,confIds,matesByCourse){
   if(!filtered.length)h+=`<div style="padding:30px;text-align:center;color:#999;font-size:12px">No courses match filters.</div>`;
   filtered.forEach((c,i)=>{
     const isSel=selected.has(c.id),col=COL[c.subj]||COL.OAM,isConf=confIds.has(c.id);
-    const mates=(matesByCourse[c.id]||[]);
+    const mates=matesByCourse[c.id]||[];
     const isExp=expandedCourse===c.id;
     h+=`<div class="cr${isSel?" sel":""}" style="--bc:${col.border};--bbg:${col.bg}" onclick="toggle('${c.id}')">
       <div class="cbox">${isSel?'<span style="color:#fff;font-size:11px;font-weight:700">✓</span>':''}</div>
@@ -406,92 +501,80 @@ function renderCalendar(sel,confIds,matesByCourse){
 }
 
 function renderSocial(matesByCourse){
-  const code=encodeSchedule();
-  let h=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`;
+  const popular=COURSES.map(c=>({...c,count:(matesByCourse[c.id]||[]).length+(selected.has(c.id)?1:0)})).filter(c=>c.count>0).sort((a,b)=>b.count-a.count).slice(0,8);
 
-  // Share panel
-  h+=`<div class="share-panel">
-    <h3>📤 Share Your Schedule</h3>
-    <p>Copy this code and send it to friends on WhatsApp. They paste it into their Friends tab to see your picks.</p>
-    <div class="share-box" id="share-code">${code}</div>
-    <button class="share-btn primary" onclick="navigator.clipboard.writeText(document.getElementById('share-code').textContent);toast('Copied! Paste in WhatsApp 🎉')">Copy Code</button>
-    <button class="share-btn secondary" onclick="shareDirect()">Share via WhatsApp</button>
+  const myIds=new Set(selected);
+  const overlaps=Object.entries(room.users||{}).filter(([uid])=>uid!==userId).map(([uid,u])=>{
+    const shared=(u.courses||[]).filter(id=>myIds.has(id));
+    return{name:u.name,shared,total:(u.courses||[]).length};
+  }).filter(u=>u.shared.length>0).sort((a,b)=>b.shared.length-a.shared.length);
+
+  let h=`<div class="share-card">
+    <h3>🔗 Share this room</h3>
+    <p>Anyone with this link will see everyone's picks live</p>
+    <div class="share-url">${location.href}</div>
+    <div class="share-row">
+      <button class="sb-primary" onclick="copyShareLink()">Copy Link</button>
+      <button class="sb-wa" onclick="shareWA()">Share via WhatsApp</button>
+    </div>
   </div>`;
 
-  // Import panel
-  h+=`<div class="share-panel">
-    <h3>📥 Add a Friend</h3>
-    <p>Paste a friend's schedule code below to see their picks and find shared courses.</p>
-    <textarea class="import-area" id="import-area" placeholder="Paste a friend's code here..."></textarea>
-    <button class="share-btn primary" onclick="importFriend()">Add Friend</button>
-  </div>`;
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`;
 
+  h+=`<div class="panel"><h3>🔥 Most Popular</h3><p class="sub">Courses with the most interest</p>`;
+  if(!popular.length)h+=`<div style="text-align:center;padding:20px;color:#bbb;font-size:12px">No picks yet — be the first!</div>`;
+  popular.forEach((c,i)=>{
+    const col=COL[c.subj]||COL.OAM,mates=matesByCourse[c.id]||[],isSel=selected.has(c.id);
+    h+=`<div class="pop-row">
+      <div class="rank" style="background:${col.bg};color:${col.text}">${i+1}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:5px"><span class="chip" style="background:${col.bg};color:${col.text}">${c.subj} ${c.cat}</span><span style="font-size:12px;font-weight:600">${c.title}</span></div>
+        <div style="margin-top:3px;display:flex;align-items:center;gap:6px">${mates.slice(0,5).map(n=>`<div class="mini-av" style="background:${hc(n)}">${ini(n)[0]}</div>`).join("")}<span style="font-size:10px;color:#888;margin-left:2px">${c.count} interested</span></div>
+      </div>
+      <button class="add-btn ${isSel?"added":""}" style="${isSel?`background:${col.border}`:""}" onclick="toggle('${c.id}')">${isSel?"✓ Added":"+ Add"}</button>
+    </div>`;
+  });
   h+=`</div>`;
 
-  // Friends list
-  if(friends.length>0){
-    h+=`<div style="margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px">`;
-
-    // Friend cards
-    h+=`<div class="share-panel"><h3>👥 Your Friends (${friends.length})</h3><p>People you've added and their course overlap with you.</p>`;
-    friends.forEach((f,fi)=>{
-      const shared=(f.c||[]).filter(id=>selected.has(id));
-      h+=`<div class="friend-card">
-        <div class="av" style="background:${hc(f.n)}">${ini(f.n)}</div>
-        <div class="info"><div class="name">${f.n}</div><div class="detail">${f.c.length} courses · ${shared.length} shared with you</div></div>
-        <button style="background:none;border:none;cursor:pointer;font-size:16px;color:#ccc" onclick="friends.splice(${fi},1);saveLocal();render()">×</button>
-      </div>`;
-    });
-    h+=`</div>`;
-
-    // Shared courses detail
-    const myIds=new Set(selected);
-    const sharedMap={};
-    friends.forEach(f=>{(f.c||[]).filter(id=>myIds.has(id)).forEach(cid=>{if(!sharedMap[cid])sharedMap[cid]=[];sharedMap[cid].push(f.n)})});
-    const sharedEntries=Object.entries(sharedMap);
-
-    h+=`<div class="share-panel"><h3>📚 Shared Courses</h3><p>Courses you have in common with friends.</p>`;
-    if(!sharedEntries.length)h+=`<div style="text-align:center;padding:20px;color:#bbb;font-size:12px">${selected.size===0?"Select courses first!":"No overlap yet — add more friends!"}</div>`;
-    sharedEntries.forEach(([cid,names])=>{
-      const c=COURSES.find(x=>x.id===cid);if(!c)return;
-      const col=COL[c.subj]||COL.OAM;
-      h+=`<div class="shared-course">
-        <span class="chip" style="background:${col.bg};color:${col.text}">${c.subj} ${c.cat}</span>
-        <span class="sc-title" style="flex:1">${c.title}</span>
-        <div style="display:flex">${names.map(n=>`<div style="width:20px;height:20px;border-radius:50%;background:${hc(n)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;margin-left:-4px;border:2px solid #fff" title="${n}">${ini(n)[0]}</div>`).join("")}</div>
-      </div>`;
-    });
-    h+=`</div></div>`;
-  }
+  h+=`<div class="panel"><h3>👥 Your Classmates</h3><p class="sub">People with overlapping picks</p>`;
+  if(!overlaps.length)h+=`<div style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">🤝</div><p style="font-size:12px;color:#bbb">${selected.size===0?"Pick courses to find classmates":"No overlap yet — share the link to invite friends!"}</p></div>`;
+  overlaps.forEach((u,i)=>{
+    h+=`<div class="friend-row">
+      <div class="av-md" style="background:${hc(u.name)}">${ini(u.name)}</div>
+      <div class="info"><div class="name">${u.name}</div><div class="meta">${u.total} courses planned</div></div>
+      <div style="text-align:right"><div class="shared-num">${u.shared.length}</div><div class="shared-lbl">shared</div></div>
+    </div>`;
+  });
+  h+=`</div></div>`;
 
   return h;
 }
 
-function importFriend(){
-  const code=document.getElementById("import-area").value.trim();
-  if(!code){toast("Paste a code first!");return}
-  const data=decodeSchedule(code);
-  if(!data||!data.n){toast("Invalid code — try again");return}
-  if(data.n===userName){toast("That's your own code!");return}
-  if(friends.find(f=>f.n===data.n)){
-    friends=friends.map(f=>f.n===data.n?data:f);
-    toast(`Updated ${data.n}'s schedule!`);
-  } else {
-    friends.push(data);
-    toast(`Added ${data.n}! 🎉`);
+// ─── Init ───
+async function init(){
+  if(!blobId){
+    try{
+      blobId=await createRoom();
+      location.hash=blobId;
+      toast("Room created! Share the link 🎉");
+    }catch(e){
+      document.getElementById("app").innerHTML=`<div class="loading"><div>⚠️ Couldn't create room. Refresh to try again.</div></div>`;
+      return;
+    }
   }
-  saveLocal();render();
+  loadLocal();
+  const data=await fetchRoom();
+  if(data){room=data;if(!room.users)room.users={}}
+  render();
+  pollInterval=setInterval(pollRoom,3000);
 }
 
-function shareDirect(){
-  const code=encodeSchedule();
-  const text=`Fall 2026 elective planning 📚 Here are my picks — paste this code into the Friends tab to see them:\n\n${code}`;
-  const url=`https://wa.me/?text=${encodeURIComponent(text)}`;
-  window.open(url,"_blank");
-}
+window.addEventListener("hashchange",()=>{
+  blobId=location.hash.replace("#","")||null;
+  if(blobId){location.reload()}
+});
 
-loadLocal();
-render();
+init();
 </script>
 </body>
 </html>
