@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fall 2026 Schedule Solver — Goizueta</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'DM Sans',system-ui,sans-serif;background:#F6F5F1;color:#1a1a1a;min-height:100vh}
+  ::-webkit-scrollbar{width:6px}::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+
+  .header{background:#1a1a1a;color:#fff;padding:20px 24px 16px}
+  .header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+  .logo{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+  .badge{font-size:11px;background:#333;padding:2px 9px;border-radius:14px;color:#999;margin-left:8px}
+  .user-area{display:flex;align-items:center;gap:8px}
+  .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700;border:2px solid rgba(255,255,255,0.2)}
+  .live-pill{display:flex;align-items:center;gap:5px;background:#292929;padding:4px 10px;border-radius:16px}
+  .live-dot{width:6px;height:6px;border-radius:50%;background:#34D399;animation:liveBlink 2s infinite}
+  @keyframes liveBlink{0%,100%{opacity:1}50%{opacity:.4}}
+
+  .stats{background:#fff;border-bottom:1px solid #e5e5e0;padding:10px 24px}
+  .stats-inner{max-width:1100px;margin:0 auto;display:flex;gap:24px;align-items:center;flex-wrap:wrap}
+  .stat-n{font-size:22px;font-weight:700}.stat-l{font-size:11px;color:#888;margin-left:4px}
+  .stat-d{width:1px;height:22px;background:#e5e5e0}
+
+  .tabs{display:flex;background:#f3f3ef;border-radius:8px;padding:2px;margin-left:auto}
+  .tab{border:none;background:none;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer;border-radius:6px;transition:all .15s;font-family:inherit;color:#888}
+  .tab.on{background:#1a1a1a;color:#fff}
+  .tab:not(.on):hover{background:#e8e8e4}
+
+  .main{max-width:1100px;margin:0 auto;padding:14px 24px 40px}
+
+  .conflict-alert{background:#FEF2F2;border:1px solid #FECACA;border-radius:9px;padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(239,68,68,.25)}50%{box-shadow:0 0 0 5px rgba(239,68,68,0)}}
+  .drop-btn{background:#EF4444;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+  .drop-btn:hover{background:#DC2626}
+
+  .grid{display:grid;grid-template-columns:1fr 300px;gap:14px}
+  @media(max-width:800px){.grid{grid-template-columns:1fr}}
+
+  .filters{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+  .filters input,.filters select{padding:8px 12px;border-radius:7px;border:1px solid #ddd;font-size:12px;background:#fff;font-family:inherit;outline:none}
+  .filters input{flex:1;min-width:140px}
+  .filters select{cursor:pointer}
+
+  .sort-bar{display:flex;gap:3px;margin-bottom:8px;align-items:center}
+  .sort-label{font-size:10px;color:#bbb;margin-right:3px}
+  .sort-btn{border:none;background:none;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:5px;color:#999;transition:all .12s}
+  .sort-btn.on{background:#1a1a1a;color:#fff}
+  .sort-btn:not(.on):hover{background:#eee}
+
+  .course-list{background:#fff;border-radius:10px;border:1px solid #e5e5e0;overflow:hidden}
+  .cr{padding:10px 12px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+  .cr:not(:last-child){border-bottom:1px solid #f0f0ec}
+  .cr:hover{background:#FAFAF8!important}
+  .cr.sel{border-left-color:var(--bc);background:var(--bbg)}
+  .cbox{width:18px;height:18px;border-radius:4px;border:2px solid #ccc;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+  .cr.sel .cbox{border-color:var(--bc);background:var(--bc)}
+  .chip{display:inline-flex;padding:2px 9px;border-radius:16px;font-size:10px;font-weight:700;letter-spacing:.4px}
+  .c-title{font-size:12px;font-weight:600}
+  .c-meta{font-size:11px;color:#888;margin-top:2px}
+  .c-meta .dot{color:#ddd;margin:0 3px}
+  .conf-badge{font-size:9px;background:#FEE2E2;color:#DC2626;padding:1px 5px;border-radius:8px;font-weight:700}
+  .mates-badge{display:flex;align-items:center;gap:4px;padding:3px 8px;border-radius:7px;background:rgba(0,0,0,.03);cursor:pointer;white-space:nowrap}
+  .mates-badge:hover{background:rgba(0,0,0,.06)}
+  .mini-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700;margin-left:-6px;border:2px solid #fff}
+  .mini-av:first-child{margin-left:0}
+  .mates-count{font-size:10px;color:#888;font-weight:600}
+
+  .expanded{padding:6px 12px 10px 44px;border-bottom:1px solid #f0f0ec;background:#FAFAF8;animation:slideIn .15s ease}
+  @keyframes slideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+  .exp-label{font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+  .mate-row{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+  .av-sm{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:8px;font-weight:700}
+  .mate-row span{font-size:12px;font-weight:500}
+
+  .sidebar{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:14px;position:sticky;top:14px}
+  .sidebar h3{font-size:13px;font-weight:700;margin-bottom:10px}
+  .side-empty{font-size:11px;color:#999;text-align:center;padding:16px}
+  .side-card{padding:7px 10px;margin-bottom:4px;border-radius:7px;display:flex;align-items:center;gap:6px}
+  .side-card .code{font-size:11px;font-weight:700}
+  .side-card .time{font-size:10px;color:#666;margin-top:1px}
+  .side-card .rm{background:none;border:none;cursor:pointer;font-size:14px;color:#999;line-height:1}
+  .side-card .rm:hover{color:#333}
+  .view-cal{width:100%;margin-top:10px;padding:8px;background:#1a1a1a;color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .view-cal:hover{background:#333}
+
+  .calendar{background:#fff;border-radius:10px;border:1px solid #e5e5e0;overflow:auto}
+  .cal-empty{padding:50px;text-align:center}
+  .cal-grid{display:grid;grid-template-columns:50px repeat(4,1fr);min-width:620px}
+  .cal-time-col{border-right:1px solid #eee}
+  .cal-day-hdr{height:36px;border-bottom:1px solid #eee;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#555;letter-spacing:.5px}
+  .cal-body{position:relative}
+  .cal-line{position:absolute;left:0;right:0;border-top:1px solid #f5f5f2}
+  .cal-time-lbl{position:absolute;right:5px;font-size:9px;color:#bbb;font-family:'DM Mono',monospace;transform:translateY(-50%)}
+  .cal-block{position:absolute;left:3px;right:3px;border-radius:5px;color:#fff;padding:5px 6px;font-size:10px;overflow:hidden;transition:all .2s;cursor:default}
+  .cal-block:hover{filter:brightness(1.06);transform:scale(1.02);z-index:10!important}
+  .cal-block.conf{border:2px solid #EF4444;box-shadow:0 0 0 2px rgba(239,68,68,.3)}
+  .cal-block .b-code{font-weight:700;font-size:11px;line-height:1.1}
+  .cal-block .b-title{opacity:.9;font-size:9px;margin-top:1px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cal-block .b-loc{opacity:.75;font-size:8px;margin-top:1px}
+  .cal-block .b-time{opacity:.65;font-size:8px;margin-top:1px}
+  .legend{display:flex;gap:12px;padding:8px 14px;border-top:1px solid #eee;flex-wrap:wrap}
+  .legend-item{display:flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:#888}
+  .legend-dot{width:10px;height:10px;border-radius:3px}
+
+  .panel{background:#fff;border-radius:10px;border:1px solid #e5e5e0;padding:16px}
+  .panel h3{font-size:14px;font-weight:700;margin-bottom:3px}
+  .panel .sub{font-size:11px;color:#999;margin-bottom:14px}
+
+  .pop-row{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .pop-row:not(:last-child){border-bottom:1px solid #f5f5f2}
+  .rank{width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+  .add-btn{padding:4px 12px;border-radius:6px;border:1px solid #ddd;background:#fff;color:#666;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+  .add-btn.added{border:none;color:#fff}
+
+  .friend-row{display:flex;align-items:center;gap:10px;padding:9px 0}
+  .friend-row:not(:last-child){border-bottom:1px solid #f5f5f2}
+  .av-md{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+  .friend-row .info{flex:1}
+  .friend-row .name{font-size:13px;font-weight:600}
+  .friend-row .meta{font-size:11px;color:#888;margin-top:1px}
+  .shared-num{font-size:18px;font-weight:700;color:#10B981}
+  .shared-lbl{font-size:9px;color:#888}
+
+  .share-card{background:linear-gradient(135deg,#1a1a1a,#2a2a2a);color:#fff;border-radius:10px;padding:20px;margin-bottom:14px}
+  .share-card h3{font-size:14px;font-weight:700;margin-bottom:4px}
+  .share-card p{font-size:11px;color:#aaa;margin-bottom:12px}
+  .share-url{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:7px;padding:10px 12px;font-family:'DM Mono',monospace;font-size:11px;word-break:break-all;margin-bottom:10px;color:#ddd;user-select:all}
+  .share-row{display:flex;gap:8px;flex-wrap:wrap}
+  .sb-primary{background:#fff;color:#1a1a1a;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+  .sb-primary:hover{background:#f0f0f0}
+  .sb-wa{background:#25D366;color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;display:flex;align-items:center;gap:6px}
+  .sb-wa:hover{background:#1ea952}
+
+  .onboard{display:flex;align-items:center;justify-content:center;min-height:100vh;text-align:center;padding:20px}
+  .onboard-box{max-width:380px;animation:fadeUp .5s ease}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+  .onboard h1{font-size:24px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
+  .onboard p{font-size:13px;color:#888;margin-bottom:24px;line-height:1.5}
+  .onboard .row{display:flex;gap:8px}
+  .onboard input{flex:1;padding:12px 16px;border-radius:10px;border:1px solid #ddd;font-size:14px;font-family:inherit;outline:none}
+  .onboard button{padding:12px 24px;border-radius:10px;border:none;background:#1a1a1a;color:#fff;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+  .onboard .room-info{margin-top:16px;font-size:11px;color:#aaa}
+
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:#fff;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:500;z-index:999;animation:toastIn .3s ease}
+  @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+  .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-size:14px;color:#999;gap:14px}
+  .spinner{width:30px;height:30px;border:3px solid #eee;border-top-color:#1a1a1a;border-radius:50%;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+
+<div id="app"><div class="loading"><div class="spinner"></div><div>Connecting to room…</div></div></div>
+
+<script>
+// ─── JSONBlob API (free, no signup, anonymous) ───
+const API="https://jsonblob.com/api/jsonBlob";
+let blobId=location.hash.replace("#","")||null;
+let pollInterval=null;
+let lastSync=0;
+
+async function createRoom(){
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify({users:{},created:Date.now()})});
+  if(!r.ok)throw new Error("Failed to create room");
+  const loc=r.headers.get("Location")||r.headers.get("location");
+  const id=loc.split("/").pop();
+  return id;
+}
+
+async function fetchRoom(){
+  if(!blobId)return null;
+  try{
+    const r=await fetch(API+"/"+blobId,{headers:{"Accept":"application/json"}});
+    if(!r.ok)return null;
+    return await r.json();
+  }catch(e){return null}
+}
+
+async function saveRoom(data){
+  if(!blobId)return;
+  try{
+    await fetch(API+"/"+blobId,{method:"PUT",headers:{"Content-Type":"application/json","Accept":"application/json"},body:JSON.stringify(data)});
+  }catch(e){console.error("Save failed",e)}
+}
+
+// ─── Course Data ───
+const COURSES=[
+  {id:"3768",subj:"OAM",cat:"561",sect:"3201",title:"Principled Leadership (Core)",location:"GBS_204",pattern:"TTh 8:30am-9:45am",professor:"TBD"},
+  {id:"3769",subj:"OAM",cat:"561",sect:"3202",title:"Principled Leadership (Core)",location:"GBS_204",pattern:"TTh 10am-11:15am",professor:"TBD"},
+  {id:"3861",subj:"ACT",cat:"504",sect:"3218",title:"Blockchains & Crypto Assets",location:"GFC_W100",pattern:"MW 2:30pm-3:45pm",professor:"Lyle, Matthew R"},
+  {id:"3862",subj:"ACT",cat:"504",sect:"3219",title:"Blockchains & Crypto Assets",location:"GFC_W100",pattern:"MW 4pm-5:15pm",professor:"Lyle, Matthew R"},
+  {id:"3649",subj:"ACT",cat:"511",sect:"3220",title:"Sustain. Measurement/Reporting",location:"GBS_334",pattern:"MW 1pm-2:15pm",professor:"Rackliffe, Usha"},
+  {id:"3831",subj:"ACT",cat:"520",sect:"3271",title:"Accounting Analytics: Insights",location:"GFC_W320",pattern:"TTh 1pm-2:15pm",professor:"Kays, Allison Megan"},
+  {id:"3869",subj:"ACT",cat:"535",sect:"3223",title:"Firm Fundamentals & Mispricing",location:"GFC_W320",pattern:"MW 2:30pm-3:45pm",professor:"Yohn, Teri Lombardi"},
+  {id:"3842",subj:"ACT",cat:"538",sect:"3225",title:"Corporate Political Strategy",location:"GBS_334",pattern:"MW 10am-11:15am",professor:"Sridharan, Suhas A"},
+  {id:"3729",subj:"ACT",cat:"612",sect:"3252",title:"Fin. Reporting of Operations",location:"GBS_201",pattern:"TTh 11:30am-12:45pm",professor:"Barton, Jan J."},
+  {id:"3685",subj:"ACT",cat:"615",sect:"3224",title:"Tax Strategy",location:"GBS_334",pattern:"MW 11:30am-12:45pm",professor:"Rackliffe, Usha"},
+  {id:"3683",subj:"ACT",cat:"650",sect:"3226",title:"Act. for Mergers & Acquisition",location:"GBS_400",pattern:"TTh 2:30pm-3:45pm",professor:"Barton, Jan J."},
+  {id:"3784",subj:"FIN",cat:"599R",sect:"3201",title:"Behavioral Economics",location:"GFC_W330",pattern:"TTh 10am-11:15am",professor:"Ramachandran, Shankar"},
+  {id:"5460",subj:"FIN",cat:"622",sect:"3282",title:"Doing Deals - Private Equity",location:"GBS_201",pattern:"Tu 4pm-6:30pm",professor:"Crowley, Kevin Michael"},
+  {id:"3686",subj:"FIN",cat:"625",sect:"3237",title:"Real Estate Finance",location:"GFC_W300",pattern:"TTh 10am-11:15am",professor:"Garate Alvarez, Sergio"},
+  {id:"5463",subj:"FIN",cat:"627",sect:"3283",title:"International Finance",location:"GBS_231",pattern:"MW 1pm-2:15pm",professor:"Anarkulova, Aizhan"},
+  {id:"3690",subj:"FIN",cat:"628",sect:"3235",title:"Investment Banking",location:"GFC_W300",pattern:"Tu 6:30pm-9:30pm",professor:"Crowley, Kevin Michael"},
+  {id:"3692",subj:"FIN",cat:"629",sect:"3236",title:"Fixed Income Portfolio Mgt.",location:"ONLINE",pattern:"Tu 6:30pm-9:30pm",professor:"Valerio III, Nicholas"},
+  {id:"3736",subj:"FIN",cat:"680",sect:"3238",title:"Frontiers & Illiquid Assets",location:"GBS_301",pattern:"M 6:30pm-9:30pm",professor:"Baks, Klaas Pieter"},
+  {id:"3727",subj:"FIN",cat:"682",sect:"3239",title:"Real Estate Market Analysis",location:"GFC_W300",pattern:"TTh 11:30am-12:45pm",professor:"Garate Alvarez, Sergio"},
+  {id:"3716",subj:"FIN",cat:"685",sect:"3240",title:"Entrepreneurial Private Equity",location:"GBS_130",pattern:"W 6:30pm-9:30pm",professor:"Baks, Klaas Pieter"},
+  {id:"3725",subj:"FIN",cat:"688",sect:"3241",title:"Real Estate Development",location:"GFC_W330",pattern:"M 6:30pm-9:30pm",professor:"McNally / Fogarty"},
+  {id:"3675",subj:"ISOM",cat:"554",sect:"3201",title:"Data Science for Business",location:"GBS_301",pattern:"MW 11:30am-12:45pm",professor:"Todri, Vilma"},
+  {id:"3801",subj:"ISOM",cat:"575",sect:"3201",title:"Data Visualization",location:"GBS_331",pattern:"TTh 11:30am-12:45pm",professor:"Bharadwaj, Anandhi"},
+  {id:"3802",subj:"ISOM",cat:"575",sect:"3242",title:"Data Visualization (Eve)",location:"GFC_W131",pattern:"M 6:30pm-9:30pm",professor:"Parasurama Gopinath"},
+  {id:"3785",subj:"ISOM",cat:"599R",sect:"3201",title:"Data Management & Analytics",location:"GBS_338",pattern:"TTh 1pm-2:15pm",professor:"Garg, Rajiv"},
+  {id:"3786",subj:"ISOM",cat:"599R",sect:"3245",title:"Project Management",location:"GBS_304",pattern:"TTh 1pm-2:15pm",professor:"Chan, Tian"},
+  {id:"5457",subj:"ISOM",cat:"653",sect:"3281",title:"Operations Strategy",location:"GBS_234",pattern:"MW 1pm-2:15pm",professor:"Rosenzweig, Eve Dugan"},
+  {id:"3706",subj:"ISOM",cat:"656",sect:"3201",title:"Intro. to Bus. Data Analytics",location:"GBS_301",pattern:"MW 2:30pm-3:45pm",professor:"Schmidt, William"},
+  {id:"3709",subj:"ISOM",cat:"659",sect:"3243",title:"Process Analysis & Six Sigma",location:"GBS_301",pattern:"TTh 2:30pm-3:45pm",professor:"Easton, George S."},
+  {id:"3719",subj:"MKT",cat:"546",sect:"3248",title:"Strategic Marketing Comm.",location:"GFC_W330",pattern:"Tu 6:30pm-9:30pm",professor:"Brames, Douglas"},
+  {id:"3666",subj:"MKT",cat:"547",sect:"3201",title:"Product & Brand Management",location:"GBS_331",pattern:"MW 10am-11:15am",professor:"Bowman, Douglas"},
+  {id:"3667",subj:"MKT",cat:"547",sect:"3249",title:"Product & Brand Mgmt (Eve)",location:"GFC_W100",pattern:"Th 6:30pm-9:30pm",professor:"Bowman, Douglas"},
+  {id:"3828",subj:"MKT",cat:"552",sect:"3201",title:"Content Marketing",location:"GFC_W300",pattern:"MW 4pm-5:15pm",professor:"Cooley, Marina"},
+  {id:"3788",subj:"MKT",cat:"599R",sect:"3251",title:"Monetizing Innovations",location:"GFC_W100",pattern:"TTh 1pm-2:15pm",professor:"Firasta-Vastani, Saloni P"},
+  {id:"3704",subj:"MKT",cat:"646",sect:"3250",title:"Consumer Behavior",location:"GBS_234",pattern:"TTh 2:30pm-3:45pm",professor:"Gaerth, Maximilian"},
+  {id:"3758",subj:"OAM",cat:"536",sect:"3268",title:"Social Impact Management",location:"GFC_W131",pattern:"W 6:30pm-9:30pm",professor:"Martin / Goebel"},
+  {id:"3775",subj:"OAM",cat:"599R",sect:"3201",title:"Leadership Dev. Fellows",location:"GBS_421",pattern:"MW 11:30am-12:45pm",professor:"Berlin, Paul R"},
+  {id:"3694",subj:"OAM",cat:"632",sect:"3201",title:"Negotiations",location:"GFC_W100",pattern:"MW 1pm-2:15pm",professor:"Sacks, Michael Alan"},
+  {id:"3695",subj:"OAM",cat:"632",sect:"3269",title:"Negotiations (Online)",location:"ONLINE",pattern:"M 6:30pm-9:30pm",professor:"Sacks, Michael Alan"},
+  {id:"5448",subj:"OAM",cat:"633",sect:"3222",title:"Leading & Managing Change",location:"GFC_W131",pattern:"MW 2:30pm-3:45pm",professor:"Berlin, Paul R"},
+  {id:"5451",subj:"OAM",cat:"635",sect:"3273",title:"Multinational Firms & Strategy",location:"GBS_334",pattern:"TTh 11:30am-12:45pm",professor:"Thomas III, Lacy Glenn"},
+  {id:"5454",subj:"OAM",cat:"636",sect:"3280",title:"Entrepreneurship",location:"GFC_W131",pattern:"TTh 1pm-2:15pm",professor:"Goetz, Charles F"},
+  {id:"3734",subj:"OAM",cat:"661",sect:"3272",title:"Applied Entrepreneurship",location:"GFC_W100",pattern:"Tu 6:30pm-9:30pm",professor:"Goetz, Charles F"},
+];
+
+const COL={ACT:{bg:"#E8F0FE",border:"#4285F4",text:"#1A56DB",cal:"#4285F4"},FIN:{bg:"#FEF3E2",border:"#F59E0B",text:"#B45309",cal:"#F59E0B"},ISOM:{bg:"#E8FAF0",border:"#34D399",text:"#047857",cal:"#10B981"},MKT:{bg:"#FDE8F0",border:"#EC4899",text:"#BE185D",cal:"#EC4899"},OAM:{bg:"#F0E8FE",border:"#8B5CF6",text:"#6D28D9",cal:"#8B5CF6"}};
+const AVC=["#4285F4","#EA4335","#FBBC04","#34A853","#FF6D01","#46BDC6","#7B61FF","#F538A0","#00BFA5","#FF6E40","#AA66CC","#2196F3","#E91E63","#9C27B0","#009688","#FF5722"];
+function hc(n){let h=0;for(let i=0;i<n.length;i++)h=n.charCodeAt(i)+((h<<5)-h);return AVC[Math.abs(h)%AVC.length]}
+function ini(n){return n.split(/\s+/).map(w=>w[0]).join("").toUpperCase().slice(0,2)}
+
+function parseTime(s){const m=s.match(/(\d+):?(\d*)([ap]m)/i);if(!m)return 0;let h=parseInt(m[1]),min=m[2]?parseInt(m[2]):0;if(m[3].toLowerCase()==="pm"&&h!==12)h+=12;if(m[3].toLowerCase()==="am"&&h===12)h=0;return h*60+min}
+function parsePattern(p){const tp=p.match(/\d+:?\d*[ap]m\s*-\s*\d+:?\d*[ap]m/i);if(!tp)return[];const[ss,es]=tp[0].split("-").map(s=>s.trim());const start=parseTime(ss),end=parseTime(es);const ds=p.replace(tp[0],"").trim();if(ds==="TTh")return[{day:"Tue",start,end},{day:"Thu",start,end}];if(ds==="MW")return[{day:"Mon",start,end},{day:"Wed",start,end}];if(ds==="Tu")return[{day:"Tue",start,end}];if(ds==="M")return[{day:"Mon",start,end}];if(ds==="W")return[{day:"Wed",start,end}];if(ds==="Th")return[{day:"Thu",start,end}];return[]}
+function fmtMin(m){const h=Math.floor(m/60),min=m%60,ap=h>=12?"pm":"am";return`${h>12?h-12:h===0?12:h}:${String(min).padStart(2,"0")}${ap}`}
+COURSES.forEach(c=>{c.slots=parsePattern(c.pattern)});
+
+const DAYS=["Mon","Tue","Wed","Thu"],SH=8,EH=22;
+
+// ─── State ───
+let userName="",userId="",selected=new Set(),room={users:{}},view="list",search="",filterSubj="ALL",filterTime="ALL",sortBy="subj",expandedCourse=null;
+let saveTimer=null,pendingSave=false;
+
+function getConflicts(){const sel=COURSES.filter(c=>selected.has(c.id)),pairs=[];for(let i=0;i<sel.length;i++)for(let j=i+1;j<sel.length;j++){for(const a of sel[i].slots)for(const b of sel[j].slots)if(a.day===b.day&&a.start<b.end&&b.start<a.end){pairs.push([sel[i],sel[j]]);break}}return pairs}
+function getConfIds(){const s=new Set();getConflicts().forEach(([a,b])=>{s.add(a.id);s.add(b.id)});return s}
+function sanitizeKey(name){return name.toLowerCase().replace(/[^a-z0-9]/g,"_")+"_"+Math.random().toString(36).slice(2,6)}
+
+async function pushUpdate(){
+  if(!userName||!blobId)return;
+  if(!room.users)room.users={};
+  room.users[userId]={name:userName,courses:[...selected],updated:Date.now()};
+  await saveRoom(room);
+}
+
+function debouncedPush(){
+  if(saveTimer)clearTimeout(saveTimer);
+  pendingSave=true;
+  saveTimer=setTimeout(async()=>{await pushUpdate();pendingSave=false},500);
+}
+
+async function pollRoom(){
+  if(pendingSave)return;
+  const data=await fetchRoom();
+  if(data){
+    room=data;
+    if(!room.users)room.users={};
+    render();
+  }
+}
+
+function startApp(){
+  const v=document.getElementById("name-input").value.trim();
+  if(!v)return;
+  userName=v;
+  userId=sanitizeKey(v);
+  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
+  pushUpdate();
+  render();
+}
+
+function loadLocal(){
+  if(!blobId)return;
+  try{const d=JSON.parse(localStorage.getItem("gbs_user_"+blobId));if(d){userName=d.name;userId=d.id;selected=new Set(d.selected||[])}}catch(e){}
+}
+
+function saveLocal(){
+  if(!blobId||!userName)return;
+  try{localStorage.setItem("gbs_user_"+blobId,JSON.stringify({name:userName,id:userId,selected:[...selected]}))}catch(e){}
+}
+
+function switchView(v){view=v;render()}
+function toggle(id){selected.has(id)?selected.delete(id):selected.add(id);saveLocal();debouncedPush();render()}
+
+function toast(msg){const el=document.createElement("div");el.className="toast";el.textContent=msg;document.body.appendChild(el);setTimeout(()=>el.remove(),2500)}
+
+function copyShareLink(){
+  const url=location.href;
+  navigator.clipboard.writeText(url).then(()=>toast("Link copied! 🎉")).catch(()=>{
+    const ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("Link copied!");
+  });
+}
+
+function shareWA(){
+  const url=location.href;
+  const text=`Fall 2026 elective planning 📚 We're picking courses together — open this link, add your name, and we'll all see who's taking what:\n\n${url}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+}
+
+// ─── Renderers ───
+function render(){
+  const app=document.getElementById("app");
+  if(!userName){app.innerHTML=renderOnboard();return}
+
+  const conf=getConflicts(),confIds=getConfIds();
+  const sel=COURSES.filter(c=>selected.has(c.id));
+  let hrs=0;sel.forEach(c=>c.slots.forEach(s=>hrs+=s.end-s.start));hrs=(hrs/60).toFixed(1);
+
+  const matesByCourse={};
+  COURSES.forEach(c=>{matesByCourse[c.id]=[]});
+  Object.entries(room.users||{}).forEach(([uid,u])=>{
+    if(uid===userId||!u||!u.courses)return;
+    u.courses.forEach(cid=>{if(matesByCourse[cid])matesByCourse[cid].push(u.name)});
+  });
+
+  const totalUsers=Object.keys(room.users||{}).length;
+
+  let html=`
+  <div class="header"><div class="header-inner">
+    <div><span class="logo">Fall 2026</span><span class="badge">Goizueta</span></div>
+    <div class="user-area">
+      <div class="live-pill"><div class="live-dot"></div><span style="font-size:10px;color:#aaa">${totalUsers} live</span></div>
+      <div class="avatar" style="background:${hc(userName)}">${ini(userName)}</div>
+      <span style="font-size:12px;font-weight:600;color:#fff">${userName}</span>
+    </div>
+  </div></div>
+  <div class="stats"><div class="stats-inner">
+    <div><span class="stat-n">${selected.size}</span><span class="stat-l">courses</span></div>
+    <div class="stat-d"></div>
+    <div><span class="stat-n">${hrs}</span><span class="stat-l">hrs/wk</span></div>
+    <div class="stat-d"></div>
+    <div><span class="stat-n" style="color:${conf.length>0?"#EF4444":"#10B981"}">${conf.length}</span><span class="stat-l">conflicts</span></div>
+    <div class="tabs">
+      <button class="tab ${view==="list"?"on":""}" onclick="switchView('list')">Courses</button>
+      <button class="tab ${view==="calendar"?"on":""}" onclick="switchView('calendar')">Week</button>
+      <button class="tab ${view==="social"?"on":""}" onclick="switchView('social')">Classmates</button>
+    </div>
+  </div></div>
+  <div class="main">`;
+
+  conf.forEach(([a,b])=>{
+    html+=`<div class="conflict-alert"><span>⚠️</span><span style="font-size:12px;color:#991B1B;flex:1"><strong>${a.subj} ${a.cat}</strong> overlaps <strong>${b.subj} ${b.cat}</strong></span>
+    <button class="drop-btn" onclick="toggle('${b.id}')">Drop ${b.subj} ${b.cat}</button>
+    <button class="drop-btn" onclick="toggle('${a.id}')">Drop ${a.subj} ${a.cat}</button></div>`;
+  });
+
+  if(view==="list")html+=renderList(sel,confIds,matesByCourse);
+  else if(view==="calendar")html+=renderCalendar(sel,confIds,matesByCourse);
+  else html+=renderSocial(matesByCourse);
+
+  html+=`</div>`;
+  app.innerHTML=html;
+}
+
+function renderOnboard(){
+  const totalUsers=Object.keys(room.users||{}).length;
+  const userList=Object.values(room.users||{}).map(u=>u.name).slice(0,5).join(", ");
+  return`<div class="onboard"><div class="onboard-box">
+    <div style="font-size:48px;margin-bottom:16px">📚</div>
+    <h1>Fall 2026 Schedule Solver</h1>
+    <p>Goizueta Business School<br>Pick your courses. See who's taking them in real-time.</p>
+    <div class="row">
+      <input type="text" id="name-input" placeholder="Enter your name..." onkeydown="if(event.key==='Enter')startApp()" autofocus>
+      <button onclick="startApp()">Go</button>
+    </div>
+    ${totalUsers>0?`<div class="room-info">🟢 ${totalUsers} ${totalUsers===1?"person is":"people are"} already in this room${userList?": "+userList:""}${totalUsers>5?" + others":""}</div>`:'<div class="room-info">You\'re the first one here — share the link to invite friends!</div>'}
+  </div></div>`;
+}
+
+function renderList(sel,confIds,matesByCourse){
+  const subjs=[...new Set(COURSES.map(c=>c.subj))].sort();
+  let filtered=COURSES.filter(c=>{
+    if(filterSubj!=="ALL"&&c.subj!==filterSubj)return false;
+    if(search&&!`${c.title} ${c.subj} ${c.cat} ${c.professor}`.toLowerCase().includes(search.toLowerCase()))return false;
+    if(filterTime==="DAY"&&c.slots.some(s=>s.start>=18*60))return false;
+    if(filterTime==="EVE"&&c.slots.every(s=>s.start<18*60))return false;
+    return true;
+  });
+  if(sortBy==="popular")filtered.sort((a,b)=>(matesByCourse[b.id]?.length||0)-(matesByCourse[a.id]?.length||0));
+  else if(sortBy==="time")filtered.sort((a,b)=>(a.slots[0]?.start||0)-(b.slots[0]?.start||0));
+  else filtered.sort((a,b)=>a.subj.localeCompare(b.subj)||a.cat.localeCompare(b.cat));
+
+  let h=`<div class="grid"><div>
+    <div class="filters">
+      <input type="text" placeholder="Search courses, professors..." value="${search}" oninput="search=this.value;render()">
+      <select onchange="filterSubj=this.value;render()">
+        <option value="ALL"${filterSubj==="ALL"?" selected":""}>All Subjects</option>
+        ${subjs.map(s=>`<option value="${s}"${filterSubj===s?" selected":""}>${s}</option>`).join("")}
+      </select>
+      <select onchange="filterTime=this.value;render()">
+        <option value="ALL"${filterTime==="ALL"?" selected":""}>All Times</option>
+        <option value="DAY"${filterTime==="DAY"?" selected":""}>Daytime</option>
+        <option value="EVE"${filterTime==="EVE"?" selected":""}>Evening</option>
+      </select>
+    </div>
+    <div class="sort-bar"><span class="sort-label">Sort:</span>
+      ${[["subj","Subject"],["time","Time"],["popular","Popular"]].map(([k,l])=>`<button class="sort-btn ${sortBy===k?"on":""}" onclick="sortBy='${k}';render()">${l}</button>`).join("")}
+    </div>
+    <div class="course-list">`;
+
+  if(!filtered.length)h+=`<div style="padding:30px;text-align:center;color:#999;font-size:12px">No courses match filters.</div>`;
+  filtered.forEach((c,i)=>{
+    const isSel=selected.has(c.id),col=COL[c.subj]||COL.OAM,isConf=confIds.has(c.id);
+    const mates=matesByCourse[c.id]||[];
+    const isExp=expandedCourse===c.id;
+    h+=`<div class="cr${isSel?" sel":""}" style="--bc:${col.border};--bbg:${col.bg}" onclick="toggle('${c.id}')">
+      <div class="cbox">${isSel?'<span style="color:#fff;font-size:11px;font-weight:700">✓</span>':''}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+          <span class="chip" style="background:${col.bg};color:${col.text}">${c.subj} ${c.cat}</span>
+          <span class="c-title">${c.title}</span>
+          ${isConf?'<span class="conf-badge">CONFLICT</span>':''}
+        </div>
+        <div class="c-meta">${c.professor}<span class="dot">·</span>${c.pattern}<span class="dot">·</span>${c.location}</div>
+      </div>
+      ${mates.length>0?`<div class="mates-badge" onclick="event.stopPropagation();expandedCourse=expandedCourse==='${c.id}'?null:'${c.id}';render()">
+        ${mates.slice(0,3).map(n=>`<div class="mini-av" style="background:${hc(n)}">${ini(n)[0]}</div>`).join("")}
+        <span class="mates-count">${mates.length}</span>
+      </div>`:''}
+    </div>`;
+    if(isExp&&mates.length>0){
+      h+=`<div class="expanded"><div class="exp-label">Also taking this</div>`;
+      mates.forEach(n=>{h+=`<div class="mate-row"><div class="av-sm" style="background:${hc(n)}">${ini(n)}</div><span>${n}</span></div>`});
+      h+=`</div>`;
+    }
+  });
+
+  h+=`</div></div><div><div class="sidebar"><h3>My Schedule (${sel.length})</h3>`;
+  if(!sel.length)h+=`<div class="side-empty">Click courses to build your schedule.</div>`;
+  sel.forEach(c=>{
+    const col=COL[c.subj]||COL.OAM;
+    const mates=matesByCourse[c.id]||[];
+    h+=`<div class="side-card" style="background:${col.bg};border-left:3px solid ${col.border}">
+      <div style="flex:1"><div class="code" style="color:${col.text}">${c.subj} ${c.cat}</div><div class="time">${c.pattern}</div></div>
+      ${mates.length>0?`<div style="display:flex">${mates.slice(0,2).map(n=>`<div style="width:18px;height:18px;border-radius:50%;background:${hc(n)};display:flex;align-items:center;justify-content:center;color:#fff;font-size:7px;font-weight:700;margin-left:-4px;border:2px solid ${col.bg}">${ini(n)[0]}</div>`).join("")}</div>`:''}
+      ${confIds.has(c.id)?'<span style="font-size:11px">⚠️</span>':''}
+      <button class="rm" onclick="event.stopPropagation();toggle('${c.id}')">×</button>
+    </div>`;
+  });
+  if(sel.length)h+=`<button class="view-cal" onclick="switchView('calendar')">View Week Calendar →</button>`;
+  h+=`</div></div></div>`;
+  return h;
+}
+
+function renderCalendar(sel,confIds,matesByCourse){
+  if(!sel.length)return`<div class="calendar"><div class="cal-empty"><p style="font-size:15px;font-weight:600;margin-bottom:4px">No courses selected</p><p style="font-size:12px;color:#888">Switch to Courses and pick some classes.</p></div></div>`;
+
+  const totalMin=(EH-SH)*60,bodyH=totalMin*0.72;
+  let timeLabels="",gridLines="";
+  for(let i=0;i<EH-SH;i++){
+    const h=SH+i,top=(i/(EH-SH))*100;
+    timeLabels+=`<div class="cal-time-lbl" style="top:${top}%">${h>12?h-12:h}${h>=12?"p":"a"}</div>`;
+    gridLines+=`<div class="cal-line" style="top:${top}%"></div>`;
+  }
+
+  let dayCols=DAYS.map(day=>{
+    let blocks="";
+    sel.forEach(c=>{
+      const col=COL[c.subj]||COL.OAM;
+      const mates=matesByCourse[c.id]||[];
+      c.slots.filter(s=>s.day===day).forEach(s=>{
+        const top=((s.start-SH*60)/totalMin)*100,h=((s.end-s.start)/totalMin)*100;
+        const isConf=confIds.has(c.id);
+        blocks+=`<div class="cal-block${isConf?" conf":""}" style="top:${top}%;height:${h}%;background:linear-gradient(135deg,${col.cal},${col.cal}dd);${!isConf?"box-shadow:0 1px 3px rgba(0,0,0,.1)":""}">
+          <div class="b-code">${c.subj} ${c.cat}</div>
+          <div class="b-title">${c.title}</div>
+          <div class="b-loc">${c.location}</div>
+          <div class="b-time">${fmtMin(s.start)}–${fmtMin(s.end)}</div>
+          ${mates.length>0?`<div style="margin-top:2px;display:flex;align-items:center;gap:2px">${mates.slice(0,2).map(n=>`<div style="width:13px;height:13px;border-radius:50%;background:rgba(255,255,255,.35);display:flex;align-items:center;justify-content:center;font-size:6px;font-weight:700">${ini(n)[0]}</div>`).join("")}${mates.length>2?`<span style="font-size:7px;opacity:.8">+${mates.length-2}</span>`:""}</div>`:""}
+        </div>`;
+      });
+    });
+    return`<div class="cal-day-col"><div class="cal-day-hdr">${day.toUpperCase()}</div><div class="cal-body" style="height:${bodyH}px">${gridLines}${blocks}</div></div>`;
+  }).join("");
+
+  let legend=Object.entries(COL).map(([k,v])=>`<div class="legend-item"><div class="legend-dot" style="background:${v.cal}"></div>${k}</div>`).join("");
+
+  return`<div class="calendar"><div class="cal-grid">
+    <div class="cal-time-col"><div class="cal-day-hdr" style="font-size:10px;color:#999">TIME</div><div class="cal-body" style="height:${bodyH}px;position:relative">${timeLabels}</div></div>
+    ${dayCols}
+  </div><div class="legend">${legend}</div></div>`;
+}
+
+function renderSocial(matesByCourse){
+  const popular=COURSES.map(c=>({...c,count:(matesByCourse[c.id]||[]).length+(selected.has(c.id)?1:0)})).filter(c=>c.count>0).sort((a,b)=>b.count-a.count).slice(0,8);
+
+  const myIds=new Set(selected);
+  const overlaps=Object.entries(room.users||{}).filter(([uid])=>uid!==userId).map(([uid,u])=>{
+    const shared=(u.courses||[]).filter(id=>myIds.has(id));
+    return{name:u.name,shared,total:(u.courses||[]).length};
+  }).filter(u=>u.shared.length>0).sort((a,b)=>b.shared.length-a.shared.length);
+
+  let h=`<div class="share-card">
+    <h3>🔗 Share this room</h3>
+    <p>Anyone with this link will see everyone's picks live</p>
+    <div class="share-url">${location.href}</div>
+    <div class="share-row">
+      <button class="sb-primary" onclick="copyShareLink()">Copy Link</button>
+      <button class="sb-wa" onclick="shareWA()">Share via WhatsApp</button>
+    </div>
+  </div>`;
+
+  h+=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">`;
+
+  h+=`<div class="panel"><h3>🔥 Most Popular</h3><p class="sub">Courses with the most interest</p>`;
+  if(!popular.length)h+=`<div style="text-align:center;padding:20px;color:#bbb;font-size:12px">No picks yet — be the first!</div>`;
+  popular.forEach((c,i)=>{
+    const col=COL[c.subj]||COL.OAM,mates=matesByCourse[c.id]||[],isSel=selected.has(c.id);
+    h+=`<div class="pop-row">
+      <div class="rank" style="background:${col.bg};color:${col.text}">${i+1}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:5px"><span class="chip" style="background:${col.bg};color:${col.text}">${c.subj} ${c.cat}</span><span style="font-size:12px;font-weight:600">${c.title}</span></div>
+        <div style="margin-top:3px;display:flex;align-items:center;gap:6px">${mates.slice(0,5).map(n=>`<div class="mini-av" style="background:${hc(n)}">${ini(n)[0]}</div>`).join("")}<span style="font-size:10px;color:#888;margin-left:2px">${c.count} interested</span></div>
+      </div>
+      <button class="add-btn ${isSel?"added":""}" style="${isSel?`background:${col.border}`:""}" onclick="toggle('${c.id}')">${isSel?"✓ Added":"+ Add"}</button>
+    </div>`;
+  });
+  h+=`</div>`;
+
+  h+=`<div class="panel"><h3>👥 Your Classmates</h3><p class="sub">People with overlapping picks</p>`;
+  if(!overlaps.length)h+=`<div style="text-align:center;padding:24px"><div style="font-size:32px;margin-bottom:8px">🤝</div><p style="font-size:12px;color:#bbb">${selected.size===0?"Pick courses to find classmates":"No overlap yet — share the link to invite friends!"}</p></div>`;
+  overlaps.forEach((u,i)=>{
+    h+=`<div class="friend-row">
+      <div class="av-md" style="background:${hc(u.name)}">${ini(u.name)}</div>
+      <div class="info"><div class="name">${u.name}</div><div class="meta">${u.total} courses planned</div></div>
+      <div style="text-align:right"><div class="shared-num">${u.shared.length}</div><div class="shared-lbl">shared</div></div>
+    </div>`;
+  });
+  h+=`</div></div>`;
+
+  return h;
+}
+
+// ─── Init ───
+async function init(){
+  if(!blobId){
+    try{
+      blobId=await createRoom();
+      location.hash=blobId;
+      toast("Room created! Share the link 🎉");
+    }catch(e){
+      document.getElementById("app").innerHTML=`<div class="loading"><div>⚠️ Couldn't create room. Refresh to try again.</div></div>`;
+      return;
+    }
+  }
+  loadLocal();
+  const data=await fetchRoom();
+  if(data){room=data;if(!room.users)room.users={}}
+  render();
+  pollInterval=setInterval(pollRoom,3000);
+}
+
+window.addEventListener("hashchange",()=>{
+  blobId=location.hash.replace("#","")||null;
+  if(blobId){location.reload()}
+});
+
+init();
+</script>
+</body>
+</html>
